@@ -1,5 +1,38 @@
 # HW2 — Policy gradients: from REINFORCE to PPO
 
+**New Homework Policies (do not skip)**
+
+## Lab Policies
+
+The full instructions and starter code for Booster Assignment 2 are available in the course GitHub repository. Please refer to the assignment README for the complete technical instructions.
+
+**Deadlines**
+
+- **Training Checkpoint:** Wednesday, September 23 at 11:59 PM
+- **Final Submission:** Monday, September 28 at 11:59 PM
+
+**Training Checkpoint**
+
+By **Wednesday, September 23 at 11:59 PM**, you must have completed the implementation required to begin training and submitted your **first training job on Delta**.
+
+For the checkpoint, submit the following file on Canvas:
+
+`course/src/course_tasks/hw2/ppo.py`
+
+This checkpoint is intended to make sure you begin training early enough to identify implementation or Delta-related issues before the final deadline.
+
+The checkpoint is **required**, but it does not change the final assignment deadline.
+
+**Final Submission**
+
+The completed assignment is due **Monday, September 28 at 11:59 PM**.
+
+Please submit your training jobs early. Training jobs may spend time in the Delta queue, particularly near the deadline.
+
+**No extensions will be given for starting training late or for jobs that do not finish because they were submitted too close to the deadline.**
+
+If there is a course-wide or system-wide Delta issue, the course staff will communicate any necessary adjustments separately.
+
 **Learning Objectives**
 
 1. Read a foundational RL paper and map every symbol in it to working code
