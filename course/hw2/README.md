@@ -8,7 +8,7 @@ The full instructions and starter code for Booster Assignment 2 are available in
 
 **Deadlines**
 
-- **Training Checkpoint:** Wednesday, September 23 at 11:59 PM
+- **Training Checkpoint:** Wednesday, September 25 at 11:59 PM
 - **Final Submission:** Monday, September 28 at 11:59 PM
 
 **Training Checkpoint**
