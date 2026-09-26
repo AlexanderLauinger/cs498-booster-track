@@ -28,8 +28,8 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --gpus=1
 #SBATCH --time=04:00:00
-#SBATCH --account=bign-dtai-gh
-#SBATCH --partition=ghx4
+#SBATCH --account=bign-delta-gpu
+#SBATCH --partition=gpuA100x4
 #SBATCH --output=logs/slurm-%j.out
 
 set -euo pipefail
