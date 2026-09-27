@@ -39,9 +39,9 @@ After that, `ssh deltaai` both logs you in and forwards the viewer port.
 
 | Location            | Use for                          | Do NOT use for |
 |---------------------|----------------------------------|----------------|
-| `$HOME` (`/u/...`)  | this repo, dotfiles, uv caches   | large or long-lived datasets — 100 GB quota, snapshots purged after ~30 days |
-| `/work/hdd/<acct>/` | large datasets, shared data      | — |
-| `/work/nvme/...`    | fast scratch                     | anything you can't afford to lose |
+| `$HOME` (`/u/<your_ncsa_username>`)  | this repo, dotfiles, uv caches   | large or long-lived datasets — 100 GB quota, snapshots purged after ~30 days |
+| `/work/hdd/bign/<your_ncsa_username>` | large datasets, shared data      | — |
+| `/work/nvme/bign/<your_ncsa_username>`    | fast scratch                     | anything you can't afford to lose |
 
 **The cartpole assignments are a deliberate exception to the usual "outputs go
 on `/work`" advice.** Their checkpoints are small, so `scripts/train.sbatch`
@@ -64,7 +64,7 @@ A.3. Nothing is installed on your laptop.
 ### B.1 Clone the repo
 
 ```bash
-git clone <COURSE_REPO_URL> ~/(your_repo_name)
+git clone https://github.com/parasollab/cs498-booster-track.git ~/(your_repo_name)
 cd ~/(your_repo_name)
 ```
 
