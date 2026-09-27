@@ -58,8 +58,10 @@ partition, a GPU cap, a wall-time cap, and the output paths. Those paths are
 **inside the repo**, under `logs/` — not on `/work`:
 
 ```bash
-sbatch scripts/train.sbatch Course-Cartpole-Swingup --env.scene.num-envs 4096
+sbatch scripts/train_<delta or deltaai>.sbatch Course-Cartpole-Swingup --env.scene.num-envs 4096
 ```
+
+If you are on the delta cluster you need to use the script `train_delta.sbatch`. If you are on delta AI, you need ot use `train_deltaai.sbatch`. The configurations are slightly different for each cluster. If you use the wrong template you will get errors.
 
 Everything after the template name is passed to `uv run train` verbatim.
 Monitor with:
