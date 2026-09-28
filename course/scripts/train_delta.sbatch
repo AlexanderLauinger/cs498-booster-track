@@ -35,11 +35,14 @@
 set -euo pipefail
 cd "${SLURM_SUBMIT_DIR}"
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
+
 TASK_ID="${1:?Usage: sbatch scripts/train.sbatch <Task-Id> [train args...]}"
 shift
 
-if [[ ! -f scripts/train.sbatch ]]; then
-  echo "ERROR: submit from the repo root (found no scripts/train.sbatch in ${SLURM_SUBMIT_DIR})" >&2
+if [[ ! -f "${SCRIPT_DIR}/${SCRIPT_NAME}" ]]; then
+  echo "ERROR: submit from the repo root (found no ${SCRIPT_DIR}/${SCRIPT_NAME} in ${SLURM_SUBMIT_DIR})" >&2
   exit 1
 fi
 
