@@ -108,3 +108,20 @@ register_mjlab_task(
 # import time like the rest of the file, so a mistake here (a typo, a duplicate
 # id) will break `uv run list-envs` for every task — run it right after you
 # write it.
+
+def my_ppo_double_cfg() -> PpoRunnerCfg:
+  """Start here for your own registration below."""
+  cfg = ppo_double_cfg()
+  cfg.experiment_name = "hw2_ppo"
+  cfg.run_name = "T24"
+  cfg.num_steps_per_env = 24
+  cfg.max_iterations = (STEPS_PER_EPISODE *_DOUBLE_ITERATIONS) // 24
+  return cfg
+
+register_mjlab_task(
+  task_id = "Course-HW2-DoubleCartpole-Balance-PPO-T24",
+  env_cfg = cartpole_double_balance_env_cfg(),
+  play_env_cfg=cartpole_double_balance_env_cfg(play=True),
+  rl_cfg = my_ppo_double_cfg(),
+  runner_cls = ReinforceRunner
+)

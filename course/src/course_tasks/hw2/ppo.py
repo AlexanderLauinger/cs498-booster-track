@@ -102,13 +102,25 @@ class PPO:
     "value of what comes after" to bootstrap. It is in the signature because an
     algorithm whose rollouts can stop mid-episode does need it.
     """
-    del last_obs
+    #del last_obs
+    
     st = self.storage
-    running = torch.zeros(st.num_envs, device=st.returns.device)
+    if self.baseline == "value":
+      with torch.no_grad():
+        next_val = self.critic(last_obs)
+    else:
+      next_val = torch.zeros(st.num_envs,device = st.returns.device)
+
+    adv = torch.zeros(st.num_envs, device=st.returns.device)
+
+
     for t in reversed(range(st.num_transitions_per_env)):
       # (1 - done) stops a return leaking backwards across an episode boundary.
-      running = st.rewards[t] + self.gamma * (1.0 - st.dones[t]) * running
-      st.returns[t] = running
+      not_done = 1.0 - st.dones[t]
+      delta = st.rewards[t] + self.gamma * not_done * next_val - st.values[t]
+      adv = delta + self.gamma * self.lam * not_done * adv
+      st.returns[t] = running = adv + st.values[t]
+      next_val = st.values[t]
 
   def compute_advantages(self) -> None:
     """`storage.advantages` from returns, minus the baseline, optionally normalized."""
@@ -124,35 +136,62 @@ class PPO:
   def update(self) -> dict[str, float]:
     """One full-batch gradient step. Returns losses for logging."""
     obs, actions, _old_log_probs, returns, advantages = self.storage.flatten()
+    n = obs.shape[0]
 
-    # Re-score the stored actions under the CURRENT policy: this is the copy of
-    # log pi that carries gradients. The stored `old_log_probs` came out of
-    # inference_mode and cannot be backpropagated through.
-    log_probs, entropy = self.actor.evaluate_actions(obs, actions)
+    sums = {
+      "policy": 0.0,
+      "value": 0.0,
+      "entropy": 0.0,
+      "ratio_dev": 0.0,
+      "clip_frac": 0.0    
+    }
 
-    policy_loss = -(log_probs * advantages).mean()
-    entropy_loss = -entropy.mean()
-    if self.baseline == "value":
-      value_loss = F.mse_loss(self.critic(obs), returns)
-    else:
-      value_loss = torch.zeros((), device=obs.device)
+    num_updates = 0
+    for _ in range (self.num_learning_epochs):
+      permute = torch.randperm(n,device=obs.device)
+      for i in torch.chunk(permute,self.num_mini_batches):
+        log_probs, entropy = self.actor.evaluate_actions(obs[i],actions[i])
+        log_ratio = log_probs - _old_log_probs[i]
+        ratio = torch.exp(log_ratio)
+        adv = advantages[i]
+        surr_unclipped = ratio * adv
+        surr_clipped = torch.clamp(ratio,1- self.clip_param, 1+ self.clip_param) * adv
 
-    loss = (
-      policy_loss
-      + self.value_loss_coef * value_loss
-      + self.entropy_coef * entropy_loss
-    )
+        # Re-score the stored actions under the CURRENT policy: this is the copy of
+        # log pi that carries gradients. The stored `old_log_probs` came out of
+        # inference_mode and cannot be backpropagated through.
+        policy_loss = -torch.min(surr_unclipped, surr_clipped).mean()
+        entropy_loss = -entropy.mean()
+        if self.baseline == "value":
+          value_loss = F.mse_loss(self.critic(obs[i]), returns[i])
+        else:
+          value_loss = torch.zeros((), device=obs.device)
 
-    self.optimizer.zero_grad()
-    loss.backward()
-    nn.utils.clip_grad_norm_(self.params, self.max_grad_norm)
-    self.optimizer.step()
+        loss = (
+          policy_loss
+          + self.value_loss_coef * value_loss
+          + self.entropy_coef * entropy_loss
+        )
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        nn.utils.clip_grad_norm_(self.params, self.max_grad_norm)
+        self.optimizer.step()
+
+        with torch.no_grad():
+          ratio_dev = (ratio - 1).abs().mean().item()
+          sums["policy"] += policy_loss.item()
+          sums["value"] += value_loss.item()
+          sums["entropy"] += entropy.mean().item()
+          sums["ratio_dev"] += ratio_dev
+          sums["clip_frac"] += ((ratio - 1).abs() > self.clip_param).float().mean().item()
+          num_updates += 1
+
+
 
     return {
-      "policy": policy_loss.item(),
-      "value": value_loss.item(),
-      "entropy": entropy.mean().item(),
-    }
+      key : val/ num_updates for key, val in sums.items()
+      }
 
   # -- Plumbing. ------------------------------------------------------------
 
